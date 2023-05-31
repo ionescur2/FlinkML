@@ -1,12 +1,28 @@
-import argparse
-import logging
-import sys
-import os
-from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
-from pyflink.table import StreamTableEnvironment, EnvironmentSettings
-from pyflink.datastream.connectors import FlinkKafkaConsumer
-from pyflink.common.serialization import SimpleStringSchema
-from pyflink.common import Configuration, WatermarkStrategy
+from pyflink.datastream import StreamExecutionEnvironment
+
+# "topic": "ie1.bf.fraudDetectionTM"
+# "$data_kafka_consumer":"data-dev" - group_id
+# "broker list" : [ie1-xes01-nxt.nxt.betfair:9092,ie1-xes02-nxt.nxt.betfair:9092,ie1-xes03-nxt.nxt.betfair:9092]
+
+"""
+{
+	"__extends": "../common.json",
+	"consumer": {
+		"type": "Kafka",
+		"connection": {
+			"broker_list": "$kafka_broker_ie1bf",
+			"socket_max_fails": "0",
+			"offset_reset": "beginning",
+			"offset_auto_commit": "false",
+			"offset_auto_commit_interval_ms": 600000,
+			"topic_metadata_refresh_interval_ms": 600000
+		}
+	}
+}
+
+
+"""
+
 """
 -----------
 Create Environment
@@ -34,31 +50,11 @@ Create Environment
 "channel": "input_stream"
 """
 
-args = {
-    "bootsrap.server":"ie1-xes201-nxt.nxt.betfair:9092,ie1-xes202-nxt.nxt.betfair:9092,ie1-xes203-nxt.nxt.betfair:9092",
-    "group_id": "data_transaction_entity_group_id",
-    "topic": "ie1.bf.payments.streaming.encryptedTransactionEntity"
+kafka_stream_args = {
+    "bootsrap.server":"ie1-xes01-nxt.nxt.betfair:9092,ie1-xes02-nxt.nxt.betfair:9092,ie1-xes03-nxt.nxt.betfair:9092",
+    "group_id": "data-dev",
+    "topic": "ie1.bf.fraudDetectionTM"
 }
 
+
 env = StreamExecutionEnvironment.get_execution_environment()
-env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
-env.set_parallelism(1)
-
-
-kafka_jar = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                            'flink-sql-connector-kafka_2.11-1.13.0.jar')
-
-jar_path = "file://{}".format(kafka_jar)
-
-env_config = Configuration()
-env_config.set_string("pipeline.jars", jar_path)
-
-env.configure(env_config)
-
-kafka_source = FlinkKafkaConsumer(topics="ie1.bf.payments.streaming.encryptedTransactionEntity",\
-            deserialization_schema=SimpleStringSchema(),\
-            properties=args)
-
-datastream = env.add_source(kafka_source).print()
-
-env.execute('Kafka')
