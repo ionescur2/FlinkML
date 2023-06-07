@@ -1,4 +1,6 @@
 from pyflink.datastream import StreamExecutionEnvironment
+from pyflink.datastream.connectors.kafka import FlinkKafkaConsumer
+from pyflink.common.serialization import SimpleStringSchema
 
 # "topic": "ie1.bf.fraudDetectionTM"
 # "$data_kafka_consumer":"data-dev" - group_id
@@ -51,10 +53,21 @@ Create Environment
 """
 
 kafka_stream_args = {
-    "bootsrap.server":"ie1-xes01-nxt.nxt.betfair:9092,ie1-xes02-nxt.nxt.betfair:9092,ie1-xes03-nxt.nxt.betfair:9092",
-    "group_id": "data-dev",
-    "topic": "ie1.bf.fraudDetectionTM"
+    "bootstrap.servers":"ie1-xes301-nxt.nxt.betfair:9092,ie1-xes302-nxt.nxt.betfair:9092,ie1-xes303-nxt.nxt.betfair:9092",
+    "group_id": "data-dev"
 }
 
 
 env = StreamExecutionEnvironment.get_execution_environment()
+env.add_jars("file:///C://github//FlinkML//flink-sql-connector-kafka-1.17.1.jar")
+
+deserialization_schema = SimpleStringSchema()
+kafka_consumer = FlinkKafkaConsumer(
+    topics='ie1.bf.iss.streaming.login',
+    deserialization_schema=deserialization_schema,
+    properties=kafka_stream_args)
+
+ds = env.add_source(kafka_consumer)
+ds.print()
+env.execute
+('payments_ds_1')

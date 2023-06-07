@@ -1,2 +1,3 @@
-/py-flink
+/dev-env
 /flink-sql-connector-kafka_2.11-1.13.0.jar
+/flink-sql-connector-kafka-1.17.1.jar
