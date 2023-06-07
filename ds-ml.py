@@ -69,5 +69,4 @@ kafka_consumer = FlinkKafkaConsumer(
 
 ds = env.add_source(kafka_consumer)
 ds.print()
-env.execute
-('payments_ds_1')
+env.execute('payments_ds_1')
